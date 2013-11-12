@@ -659,6 +659,8 @@ if [ "$BlueTooth" = "TRUE" ]; then
  EnableBlueTooth=( "-bt hci" )
 fi
 
+CheckDisk="file=$HOME/.procurator/disks/$Disk"
+
 ## Just a bit of debugging information
 echo "These are the options being sent to KVM "${EnableTablet[@]}" "${EnableFullScreen[@]}" "${EnableBlueTooth[@]}" "${SetName[@]}" -cpu host -boot order=dc -m $RamSize -smp $Cores -soundhw ac97 -$VideoOutput "${SpiceArray[@]}" -vga $VideoDriver "${CDRomArray[@]}" "${HardDisk[@]}""
 
@@ -672,13 +674,13 @@ done &
 fi
 
 ## Check to see if there is already an instance running on the virtual drive
-TestingArray=( "kvm ${HardDisk[@]} -boot order=dc -cpu host -soundhw ac97" )
-TestInstance=$(pgrep -fl "${TestingArray}" | awk '{print $1}')
+TestInstance=$(pgrep -fl kvm | grep "$CheckDisk" | awk '{print $1}')
+
 
 if [ "$TestInstance" = "" ]; then
 kvm "${HardDisk[@]}" -boot order=dc -cpu host -soundhw ac97 "${EnableTablet[@]}" "${EnableFullScreen[@]}" "${EnableBlueTooth[@]}" "${SetName[@]}" -m $RamSize -smp $Cores -$VideoOutput "${SpiceArray[@]}" -vga $VideoDriver "${CDRomArray[@]}" 
 else
-yad "${Title[@]}" --window-icon="error" --image="error" --width="275" --wrap --text="$PRODISKINUSE${HardDisk[@]}" --button=$"$PROSHUTDOWN:3" --button=$"gtk-ok:1"
+yad "${Title[@]}" --window-icon="error" --image="error" --width="275" --wrap --text="$PRODISKINUSE$CheckDisk\nPID # $TestInstance\n" --button=$"$PROSHUTDOWN:3" --button=$"gtk-ok:1"
 
 ret="$?"
 
